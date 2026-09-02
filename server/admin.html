@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>V1//TRAINING — Question Manager</title>
+<link rel="stylesheet" href="/static/css/theme.css">
+<link rel="stylesheet" href="/static/css/admin.css">
+
+</head>
+<body>
+<div class="app">
+
+  <div class="hud-top">
+    <div class="brand">V1<span class="v1">//</span>ADMIN<small>QUESTION MANAGER</small></div>
+    <a href="/">← Back to app</a>
+  </div>
+
+  <div class="section-label">Add a Question</div>
+  <div class="panel chamfer" id="add-form">
+    <label for="f-subject-select">Subject</label>
+    <select id="f-subject-select"></select>
+    <input type="text" id="f-subject-new" placeholder="Type the new subject name" style="display:none; margin-top:8px;">
+
+    <label for="f-question">Question</label>
+    <textarea id="f-question" placeholder="e.g. What is the capital of France?"></textarea>
+
+    <label>Answer Options (select the correct one)</label>
+    <div class="option-row"><span class="k">A</span><input type="radio" name="f-correct" value="0" checked><input type="text" id="f-opt-0" placeholder="Option A"></div>
+    <div class="option-row"><span class="k">B</span><input type="radio" name="f-correct" value="1"><input type="text" id="f-opt-1" placeholder="Option B"></div>
+    <div class="option-row"><span class="k">C</span><input type="radio" name="f-correct" value="2"><input type="text" id="f-opt-2" placeholder="Option C"></div>
+    <div class="option-row"><span class="k">D</span><input type="radio" name="f-correct" value="3"><input type="text" id="f-opt-3" placeholder="Option D"></div>
+
+    <label for="f-explain">Explanation (shown when a student gets it wrong)</label>
+    <textarea id="f-explain" placeholder="e.g. Paris is the capital and largest city of France."></textarea>
+
+    <p class="inline-msg" id="form-msg"></p>
+    <button class="btn btn-primary chamfer" id="btn-add">Add Question</button>
+  </div>
+
+  <div class="section-label">AI-Assisted Generation</div>
+  <div class="panel chamfer" id="ai-form">
+    <p class="ai-note">⚠ AI can get facts, dates, formulas or answer keys wrong. Always read through the generated questions below before importing them — imported questions are tagged "AI Generated" so you (and students) always know where they came from.</p>
+
+    <label for="ai-subject">Subject</label>
+    <input type="text" id="ai-subject" placeholder="e.g. Physics">
+
+    <label for="ai-topic">Topic / focus (optional)</label>
+    <input type="text" id="ai-topic" placeholder="e.g. Newton's Laws of Motion">
+
+    <label for="ai-level">Level (optional)</label>
+    <input type="text" id="ai-level" placeholder="e.g. Singapore Secondary 3">
+
+    <label for="ai-count">Number of questions</label>
+    <input type="text" id="ai-count" value="5" inputmode="numeric">
+
+    <button class="btn btn-primary chamfer" id="btn-build-prompt" style="margin-top:16px;">Generate Prompt</button>
+
+    <div id="ai-prompt-wrap" style="display:none; margin-top:16px;">
+      <label>1. Copy this prompt into ChatGPT, Claude, Gemini, or any AI chatbot</label>
+      <textarea id="ai-prompt-output" readonly style="min-height:180px; font-family:var(--font-mono); font-size:12px;"></textarea>
+      <button class="btn btn-primary chamfer" id="btn-copy-prompt" style="margin-top:10px;">Copy Prompt</button>
+      <p class="inline-msg" id="copy-msg"></p>
+
+      <label style="margin-top:22px;">2. Paste the AI's JSON reply here</label>
+      <textarea id="ai-json-input" placeholder="Paste the JSON array the AI gave you..." style="min-height:140px; font-family:var(--font-mono); font-size:12px;"></textarea>
+      <button class="btn btn-primary chamfer" id="btn-parse-ai" style="margin-top:10px;">Parse & Preview</button>
+      <p class="inline-msg" id="ai-parse-msg"></p>
+
+      <div id="ai-preview-list"></div>
+      <button class="btn btn-primary chamfer" id="btn-import-ai" style="display:none;">Import Reviewed Questions</button>
+    </div>
+  </div>
+
+  <div class="section-label">Existing Questions</div>
+  <div class="filter-row">
+    <select id="filter-subject">
+      <option value="">All subjects</option>
+    </select>
+    <span class="count" id="q-count">0 questions</span>
+  </div>
+  <p class="inline-msg" id="list-msg"></p>
+  <div id="question-list"></div>
+
+  <footer class="tiny">V1//TRAINING · LOCAL ADMIN TOOL · CHANGES SAVE STRAIGHT TO THE DATABASE</footer>
+</div>
+
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

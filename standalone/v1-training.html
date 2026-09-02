@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>V1//TRAINING — Practice Drills</title>
+<style>
+  :root{
+    --bg:#07070a;
+    --bg2:#0c0c10;
+    --panel:#0e0e12;
+    --panel-hi:#151519;
+    --line:#2a2a30;
+    --red:#ff1f2b;
+    --red-dim:#5c0d13;
+    --red-glow:rgba(255,31,43,.45);
+    --white:#f2f2ef;
+    --grey:#95959c;
+    --amber:#ffb703;
+    --green:#39ff6a;
+    --gold:#ffd700;
+    --font-display:"Arial Narrow", Arial, sans-serif;
+    --font-mono:"Courier New", Courier, monospace;
+    --chamfer:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:var(--font-display);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  .fx-overlay{
+    position:fixed; inset:0; pointer-events:none; z-index:50;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,31,43,0.05), transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.7), transparent 55%),
+      repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 2px, transparent 4px);
+    mix-blend-mode:overlay;
+  }
+
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    padding:14px 14px 28px;
+  }
+
+  .chamfer{
+    clip-path:polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+  }
+  .chamfer-sm{
+    clip-path:polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  }
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel-hi), var(--panel));
+    border:1px solid var(--line);
+    padding:16px;
+  }
+
+  .hud-top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px;
+    margin-bottom:14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--red);
+  }
+  .brand{
+    font-weight:900;
+    font-size:20px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    transform:skewX(-8deg);
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+  }
+  .brand .v1{color:var(--red);}
+  .brand small{
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--grey);
+    letter-spacing:2px;
+    transform:skewX(0deg);
+  }
+  .mark{
+    width:26px;height:26px;flex:none;
+    background:var(--red);
+    clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+    position:relative;
+    box-shadow:0 0 12px var(--red-glow);
+  }
+  .mark::after{
+    content:'';
+    position:absolute; inset:8px;
+    background:var(--bg);
+    clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+  }
+
+  .rank-chip{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:1px;
+    color:var(--grey);
+    text-align:right;
+  }
+  .rank-chip .r{
+    display:inline-block;
+    margin-left:6px;
+    padding:2px 8px;
+    color:var(--bg);
+    background:var(--amber);
+    font-weight:900;
+  }
+
+  .section-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:3px;
+    color:var(--red);
+    text-transform:uppercase;
+    margin:18px 0 8px 2px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:linear-gradient(to right, var(--line), transparent);
+  }
+
+  .screen{display:none; flex-direction:column; gap:4px; animation:fadein .35s ease;}
+  .screen.active{display:flex;}
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .profile{ padding:16px; position:relative; }
+  .profile-name{
+    font-size:26px; font-weight:900; text-transform:uppercase;
+    letter-spacing:.5px; transform:skewX(-6deg); line-height:1.1;
+  }
+  .profile-meta{ font-family:var(--font-mono); font-size:12px; color:var(--grey); margin-top:4px; letter-spacing:.5px; }
+  .profile-meta b{color:var(--white); font-weight:700;}
+  .cca-tag{
+    display:inline-block; margin-top:10px; padding:3px 10px;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:1.5px;
+    color:var(--red); border:1px solid var(--red-dim); text-transform:uppercase;
+  }
+
+  .stat-strip{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:14px; }
+  .stat{ background:var(--bg2); border:1px solid var(--line); padding:10px 8px; text-align:center; }
+  .stat .num{ font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--white); }
+  .stat.xp .num{color:var(--green);}
+  .stat.streak .num{color:var(--amber);}
+  .stat.pcur .num{color:var(--gold);}
+  .stat .lbl{ font-size:10px; letter-spacing:2px; color:var(--grey); margin-top:2px; text-transform:uppercase; }
+
+  .style-meter{ margin-top:16px; padding:14px; }
+  .style-meter .row{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:4px;}
+  .style-meter .title{ font-family:var(--font-mono); font-size:11px; letter-spacing:2px; color:var(--grey); text-transform:uppercase; }
+  .style-meter .current{ font-weight:900; font-size:14px; color:var(--amber); letter-spacing:1px; }
+  .rank-track{ display:flex; gap:4px; margin-top:10px; }
+  .rank-track .seg{
+    flex:1; height:22px; background:var(--bg2); border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono); font-weight:900; font-size:10px; color:#4a4a52;
+    clip-path:polygon(6px 0,100% 0,100% 100%,6px 100%,0 calc(100% - 6px),0 6px);
+  }
+  .rank-track .seg.active{ color:var(--bg); box-shadow:0 0 10px var(--red-glow); }
+
+  .subject{ padding:12px 14px; margin-bottom:8px; }
+  .subject .row{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:12px; }
+  .subject .name{ font-weight:700; letter-spacing:1px; color:var(--white); }
+  .subject .pct{font-weight:700;}
+  .bar{ margin-top:8px; height:8px; background:var(--bg2); border:1px solid var(--line); position:relative; overflow:hidden; }
+  .bar .fill{ height:100%; transition:width .3s ease; }
+  .level-low .pct, .level-low .fill{color:var(--red); background:var(--red);}
+  .level-mid .pct, .level-mid .fill{color:var(--amber); background:var(--amber);}
+  .level-high .pct, .level-high .fill{color:var(--green); background:var(--green);}
+
+  .btn{
+    display:block; width:100%; border:none; cursor:pointer;
+    font-family:var(--font-display); font-weight:900; text-transform:uppercase;
+    letter-spacing:2px; font-size:15px; padding:16px; text-align:center;
+    transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn:focus-visible{ outline:3px solid var(--white); outline-offset:2px; }
+  .btn-primary{ background:var(--red); color:var(--bg); box-shadow:0 0 22px var(--red-glow); margin-top:18px; }
+  .btn-primary:hover{filter:brightness(1.12);}
+  .btn-gold{ background:var(--gold); color:var(--bg); box-shadow:0 0 22px rgba(255,215,0,.4); margin-top:10px; }
+  .btn-ghost{
+    background:transparent; color:var(--grey); border:1px solid var(--line);
+    margin-top:10px; font-size:12px; letter-spacing:2px; padding:12px;
+  }
+  .btn-ghost:hover{color:var(--white); border-color:var(--grey);}
+
+  .encourage{
+    margin-top:14px; font-family:var(--font-mono); font-size:12px; color:var(--grey);
+    font-style:italic; padding-left:10px; border-left:2px solid var(--red-dim);
+  }
+  .disclaimer{ margin-top:22px; font-size:10px; color:#55555c; line-height:1.5; text-align:center; }
+
+  /* ---------- mission setup ---------- */
+  .diff-item{ padding:12px 14px; margin-bottom:8px; cursor:pointer; }
+  .diff-item .row{display:flex; justify-content:space-between; align-items:center;}
+  .diff-item .name{font-weight:900; letter-spacing:1px; text-transform:uppercase; font-size:14px;}
+  .diff-item .tag{font-family:var(--font-mono); font-size:10px; color:var(--grey); margin-top:4px; line-height:1.4;}
+  .diff-item .cat{font-family:var(--font-mono); font-size:9px; letter-spacing:1px; color:var(--bg); background:var(--grey); padding:2px 6px;}
+  .diff-item.selected{border-color:var(--red); box-shadow:0 0 14px var(--red-glow);}
+  .diff-item.selected .cat{background:var(--red);}
+  .diff-item.locked{opacity:.4; cursor:not-allowed;}
+
+  .subject-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .subj-chip{ padding:10px; cursor:pointer; text-align:center; }
+  .subj-chip .name{font-weight:700; font-size:12px; letter-spacing:.3px;}
+  .subj-chip .score{font-family:var(--font-mono); font-size:10px; color:var(--grey); margin-top:2px;}
+  .subj-chip.selected{border-color:var(--green); box-shadow:0 0 10px rgba(57,255,106,.3);}
+
+  .qcount-panel{padding:16px;}
+  .qcount-panel .row{display:flex; justify-content:space-between; align-items:baseline;}
+  .qcount-panel .lbl{font-family:var(--font-mono); font-size:11px; letter-spacing:2px; color:var(--grey); text-transform:uppercase;}
+  .qcount-panel .val{font-family:var(--font-mono); font-weight:900; font-size:24px; color:var(--amber);}
+  .qcount-panel .minmax{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:9px; color:var(--grey); margin-top:4px;}
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:6px; margin-top:10px; background:var(--bg2); border:1px solid var(--line); }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:20px; height:20px; background:var(--red); clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%); cursor:pointer; }
+  input[type=range]::-moz-range-thumb{ width:20px; height:20px; background:var(--red); border:none; clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%); cursor:pointer; }
+
+  .inline-msg{ font-family:var(--font-mono); font-size:11px; color:var(--red); text-align:center; min-height:14px; margin:6px 0; letter-spacing:1px; }
+
+  /* ---------- practice screen ---------- */
+  .quiz-hud{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-mono); font-size:11px; color:var(--grey);
+    letter-spacing:1px; margin-bottom:10px;
+  }
+  .quiz-hud .qtag{ color:var(--red); font-weight:700; }
+  .quiz-hud .time.frozen{color:#7ad7ff;}
+  .quiz-hud .diff-pill{
+    font-family:var(--font-mono); font-size:9px; letter-spacing:1px;
+    color:var(--bg); background:var(--amber); padding:2px 6px;
+  }
+
+  .loadout{ display:flex; gap:8px; margin-bottom:10px; }
+  .loadout .pu{
+    flex:1; background:var(--bg2); border:1px solid var(--line); color:var(--white);
+    padding:8px 4px; text-align:center; font-family:var(--font-mono); font-size:10px;
+    letter-spacing:.5px; cursor:pointer;
+  }
+  .loadout .pu b{display:block; font-size:12px; margin-bottom:2px;}
+  .loadout .pu:disabled{opacity:.35; cursor:not-allowed;}
+  .loadout .pu.armed{border-color:var(--green); box-shadow:0 0 10px rgba(57,255,106,.35); color:var(--green);}
+
+  .subj-pill{
+    display:inline-block; padding:3px 10px; font-family:var(--font-mono);
+    font-size:10px; letter-spacing:1.5px; background:var(--red-dim); color:var(--white); margin-bottom:12px;
+  }
+  .question-text{ font-size:19px; font-weight:700; line-height:1.35; margin:4px 0 18px; }
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .option{
+    text-align:left; background:var(--bg2); border:1px solid var(--line); color:var(--white);
+    padding:14px 14px; font-family:var(--font-display); font-size:15px; font-weight:700;
+    cursor:pointer; letter-spacing:.3px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .option .k{ font-family:var(--font-mono); color:var(--red); font-weight:900; }
+  .option:hover:not(:disabled){border-color:var(--red-dim);}
+  .option.eliminated{ opacity:.25; pointer-events:none; text-decoration:line-through; }
+  .option:disabled{cursor:default;}
+  .option:focus-visible{ outline:3px solid var(--white); outline-offset:2px; }
+
+  .feedback-panel{ padding:18px; }
+  .feedback-tag{
+    font-family:var(--font-mono); font-weight:900; font-size:13px; letter-spacing:3px;
+    margin-bottom:10px; display:inline-block;
+  }
+  .feedback-tag.ok{color:var(--green);}
+  .feedback-tag.bad{color:var(--red);}
+  .feedback-tag.sw{color:#7ad7ff;}
+  .feedback-explain{ font-size:14px; color:var(--grey); line-height:1.5; margin-bottom:16px; }
+  .feedback-gains{ font-family:var(--font-mono); font-size:12px; color:var(--white); margin-bottom:14px; }
+  .feedback-gains span{ color:var(--green); font-weight:700; }
+  .choice-row{ display:flex; gap:8px; }
+  .choice-row .btn{margin-top:0;}
+
+  /* ---------- style meter (in-mission) ---------- */
+  .live-style .track8{ display:flex; gap:3px; margin-top:10px; }
+  .live-style .track8 .seg{
+    flex:1; height:16px; background:var(--bg2); border:1px solid var(--line);
+    clip-path:polygon(4px 0,100% 0,100% 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  }
+  .live-style .meta{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10px; color:var(--grey); margin-top:6px; }
+  .live-style .meta b{color:var(--amber);}
+
+  /* ---------- overview / mission complete ---------- */
+  .result-hero{ text-align:center; padding:26px 16px; }
+  .result-hero .tag{ font-family:var(--font-mono); font-size:11px; letter-spacing:4px; color:var(--red); text-transform:uppercase; }
+  .rank-stamp{
+    font-size:56px; font-weight:900; letter-spacing:2px; margin:10px 0;
+    transform:skewX(-6deg) scale(1); display:inline-block;
+    animation:stamp .4s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes stamp{ from{transform:skewX(-6deg) scale(2.2); opacity:0;} to{transform:skewX(-6deg) scale(1); opacity:1;} }
+
+  .breakdown{ margin-top:6px; }
+  .breakdown-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 4px; border-bottom:1px solid var(--line);
+    font-family:var(--font-mono); font-size:12px;
+  }
+  .breakdown-row:last-child{border-bottom:none;}
+  .breakdown-row .name{ color:var(--grey); letter-spacing:1px; text-transform:uppercase; font-size:11px;}
+  .breakdown-row .val{ color:var(--white); font-weight:700; }
+  .badge{
+    display:inline-block; width:26px; height:26px; line-height:26px; text-align:center;
+    font-weight:900; font-family:var(--font-mono); font-size:13px; color:var(--bg); margin-right:8px;
+  }
+
+  .p-lines{ margin-top:14px; }
+  .p-line{
+    display:flex; justify-content:space-between; font-family:var(--font-mono);
+    font-size:12px; color:var(--grey); padding:4px 2px;
+  }
+  .p-line b{color:var(--gold);}
+  .p-total{
+    display:flex; justify-content:space-between; font-family:var(--font-mono);
+    font-size:15px; color:var(--white); font-weight:700; padding:10px 2px 2px; margin-top:6px;
+    border-top:1px dashed var(--line);
+  }
+  .p-total b{color:var(--gold);}
+
+  /* ---------- shop ---------- */
+  .shop-balance{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; margin-bottom:14px;
+  }
+  .shop-balance .lbl{font-family:var(--font-mono); font-size:11px; letter-spacing:2px; color:var(--grey);}
+  .shop-balance .val{font-family:var(--font-mono); font-size:24px; font-weight:900; color:var(--gold);}
+  .shop-item{ padding:14px; margin-bottom:10px; }
+  .shop-item .row{display:flex; justify-content:space-between; align-items:baseline;}
+  .shop-item .name{font-weight:900; text-transform:uppercase; letter-spacing:.5px; font-size:15px;}
+  .shop-item .cost{font-family:var(--font-mono); color:var(--gold); font-weight:700; font-size:13px;}
+  .shop-item .desc{font-family:var(--font-mono); font-size:11px; color:var(--grey); margin:6px 0 10px; line-height:1.5;}
+  .shop-item .owned{font-family:var(--font-mono); font-size:10px; color:var(--grey); letter-spacing:1px;}
+
+  footer.tiny{
+    margin-top:auto; padding-top:22px; text-align:center;
+    font-family:var(--font-mono); font-size:9px; letter-spacing:2px; color:#3a3a40;
+  }
+
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+  @media (min-width:520px){ .app{padding-top:28px;} }
+</style>
+</head>
+<body>
+<div class="fx-overlay"></div>
+<div class="app">
+
+  <div class="hud-top">
+    <div class="brand">
+      <div class="mark"></div>
+      <span class="v1">V1</span><span>//TRAINING</span>
+      <small>DRILL SIM</small>
+    </div>
+    <div class="rank-chip">BEST<span class="r" id="hud-rank">—</span></div>
+  </div>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <section class="screen active" id="screen-dashboard">
+
+    <div class="panel chamfer profile">
+      <div class="profile-name">Alex Tan</div>
+      <div class="profile-meta"><b>Secondary 3</b> · Yishun Meridian Sec</div>
+      <span class="cca-tag">CCA · Infocomm Club</span>
+
+      <div class="stat-strip">
+        <div class="stat xp"><div class="num" id="stat-xp">0</div><div class="lbl">XP</div></div>
+        <div class="stat pcur"><div class="num" id="stat-p">0</div><div class="lbl">P</div></div>
+        <div class="stat streak"><div class="num" id="stat-streak">0</div><div class="lbl">Streak</div></div>
+        <div class="stat"><div class="num" id="stat-sessions">0</div><div class="lbl">Missions</div></div>
+      </div>
+    </div>
+
+    <div class="panel chamfer style-meter">
+      <div class="row">
+        <span class="title">Best Mission Rank</span>
+        <span class="current" id="best-rank-label">No runs yet</span>
+      </div>
+      <div class="rank-track" id="rank-track">
+        <div class="seg" data-rank="D">D</div>
+        <div class="seg" data-rank="C">C</div>
+        <div class="seg" data-rank="B">B</div>
+        <div class="seg" data-rank="A">A</div>
+        <div class="seg" data-rank="S">S</div>
+        <div class="seg" data-rank="P">P</div>
+      </div>
+    </div>
+
+    <div class="section-label">Subject Drills</div>
+    <div id="subject-list"></div>
+
+    <p class="encourage" id="dash-encourage">"Every rep sharpens the blade. Get in there, V1."</p>
+
+    <button class="btn btn-primary chamfer" id="btn-start-practice">Start Practice</button>
+    <button class="btn btn-ghost chamfer" id="btn-open-shop">Terminal (Shop) · <span id="shop-btn-p">0</span> P</button>
+
+    <p class="disclaimer">Prototype for demonstration only. Not a diagnostic or mental-health monitoring tool. Progress shown is illustrative, not a performance guarantee.</p>
+  </section>
+
+  <!-- ===================== MISSION SETUP ===================== -->
+  <section class="screen" id="screen-setup">
+    <div class="section-label">Select Difficulty</div>
+    <div id="difficulty-list"></div>
+
+    <div class="section-label">Select Subjects</div>
+    <div class="subject-grid" id="subject-grid"></div>
+
+    <div class="section-label">Mission Length</div>
+    <div class="panel chamfer-sm qcount-panel">
+      <div class="row">
+        <span class="lbl">Questions</span>
+        <span class="val" id="qcount-label">10</span>
+      </div>
+      <input type="range" min="5" max="30" step="1" value="10" id="qcount-slider">
+      <div class="minmax"><span>5 (Quick)</span><span>30 (Full)</span></div>
+    </div>
+
+    <p class="inline-msg" id="setup-msg"></p>
+
+    <button class="btn btn-primary chamfer" id="btn-deploy">Deploy Mission</button>
+    <button class="btn btn-ghost" id="btn-setup-back">Back to Base</button>
+  </section>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <section class="screen" id="screen-practice">
+    <div class="quiz-hud">
+      <span><span class="qtag" id="q-progress">QUESTION 1/10</span> <span class="diff-pill" id="q-diff-pill">STANDARD</span></span>
+      <span class="time" id="mission-time">TIME 00:00</span>
+    </div>
+
+    <div class="panel chamfer-sm live-style">
+      <div class="row" style="display:flex;justify-content:space-between;">
+        <span class="title" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--grey);text-transform:uppercase;">Style</span>
+        <span class="current" id="live-style-name" style="font-weight:900;font-size:12px;letter-spacing:1px;">DESTRUCTIVE</span>
+      </div>
+      <div class="track8" id="live-style-track"></div>
+      <div class="meta"><span>SCORE <b id="live-style-score">0</b></span><span>COMBO <b id="live-combo">x1.0</b></span></div>
+    </div>
+
+    <div class="loadout" id="loadout-bar"></div>
+
+    <div class="panel chamfer" style="padding:18px;" id="question-card">
+      <span class="subj-pill" id="q-subject">MATHEMATICS</span>
+      <div class="question-text" id="q-text">—</div>
+      <div class="options" id="q-options"></div>
+    </div>
+
+    <button class="btn btn-ghost" id="btn-quit-practice">Abort Mission</button>
+  </section>
+
+  <!-- ===================== OVERVIEW (MISSION COMPLETE) ===================== -->
+  <section class="screen" id="screen-overview">
+    <div class="panel chamfer result-hero">
+      <div class="tag">Mission Complete</div>
+      <div class="rank-stamp" id="agg-rank-stamp">S</div>
+    </div>
+
+    <div class="panel chamfer-sm breakdown" style="margin-top:10px;">
+      <div class="breakdown-row">
+        <span class="name"><span class="badge" id="badge-time">S</span>Time</span>
+        <span class="val" id="val-time">0:00</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name"><span class="badge" id="badge-q">S</span>Questions</span>
+        <span class="val" id="val-q">0/10</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name"><span class="badge" id="badge-acc">S</span>Accuracy</span>
+        <span class="val" id="val-acc">0/10</span>
+      </div>
+    </div>
+
+    <div class="panel chamfer-sm p-lines">
+      <div class="p-line"><span>Rank Payout</span><b id="p-base">+0 P</b></div>
+      <div class="p-line"><span>Style Bonus</span><b id="p-style">+0 P</b></div>
+      <div class="p-line"><span>No-Redo Bonus</span><b id="p-noredo">+0 P</b></div>
+      <div class="p-line"><span>Flawless Bonus</span><b id="p-flawless">+0 P</b></div>
+      <div class="p-total"><span>Total earned · <span id="xp-earned">+0 XP</span></span><b id="p-total">+0 P</b></div>
+    </div>
+
+    <p class="encourage" id="progress-msg">"Session complete."</p>
+
+    <button class="btn btn-primary chamfer" id="btn-practice-again">Practice Again</button>
+    <button class="btn btn-gold chamfer" id="btn-goto-shop">Visit Terminal</button>
+    <button class="btn btn-ghost" id="btn-back-base">Back to Base</button>
+  </section>
+
+  <!-- ===================== SHOP / TERMINAL ===================== -->
+  <section class="screen" id="screen-shop">
+    <div class="panel chamfer shop-balance">
+      <span class="lbl">Available P</span>
+      <span class="val" id="shop-p-balance">0</span>
+    </div>
+
+    <p class="inline-msg" id="shop-msg"></p>
+
+    <div id="shop-list"></div>
+
+    <button class="btn btn-ghost" id="btn-shop-back">Back to Base</button>
+  </section>
+
+  <footer class="tiny">YISHUN MERIDIAN SEC · MOTIVATION PROTOTYPE · NOT FOR CLINICAL USE</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     SAMPLE DATA — hard-coded, no accounts/DB
+     ========================================================= */
+  const SUBJECTS = [
+    { code:'MATH', name:'Mathematics', score:42 },
+    { code:'PHY',  name:'Physics', score:45 },
+    { code:'CHEM', name:'Chemistry', score:39 },
+    { code:'BIO',  name:'Biology', score:51 },
+    { code:'ENG',  name:'English', score:55 },
+    { code:'GEOG', name:'Geography', score:47 },
+    { code:'HIST', name:'History', score:53 },
+    { code:'ECON', name:'Economics', score:44 },
+    { code:'BIZ',  name:'Business Studies', score:58 },
+    { code:'MTL',  name:'Mother Tongue (Chinese)', score:50 },
+  ];
+  function subjectName(code){ const s = SUBJECTS.find(function(x){return x.code===code;}); return s ? s.name : code; }
+
+  // Demo question bank — a handful per subject, not full syllabus coverage.
+  // If a mission asks for more questions than a subject pool has, the pool
+  // is reshuffled and reused rather than left short.
+  const QUESTIONS = [
+    // Mathematics
+    { subject:'MATH', q:'Simplify: 3x + 5 = 20. What is x?', options:['3','5','15','25'], answer:1,
+      explain:'Subtract 5 from both sides to get 3x = 15, then divide by 3: x = 5.' },
+    { subject:'MATH', q:'What is 15% of 200?', options:['20','30','15','45'], answer:1,
+      explain:'15% of 200 = 0.15 \u00D7 200 = 30.' },
+    { subject:'MATH', q:'What is the value of \u03C0 (pi), rounded to 2 decimal places?', options:['3.14','3.41','3.12','3.16'], answer:0,
+      explain:'\u03C0 \u2248 3.14159..., which rounds to 3.14 at 2 decimal places.' },
+    { subject:'MATH', q:'Solve for y: 2y \u2212 4 = 10', options:['3','5','7','14'], answer:2,
+      explain:'Add 4 to both sides: 2y = 14, then divide by 2: y = 7.' },
+    // Physics
+    { subject:'PHY', q:'What is the SI unit of force?', options:['Joule','Newton','Watt','Pascal'], answer:1,
+      explain:'Force is measured in newtons (N), named after Sir Isaac Newton.' },
+    { subject:'PHY', q:"Which equation is Newton's Second Law of Motion?", options:['F = ma','E = mc\u00B2','V = IR','P = mgh'], answer:0,
+      explain:"Newton's Second Law states force equals mass times acceleration (F = ma)." },
+    { subject:'PHY', q:'What type of energy does a moving object have?', options:['Potential','Kinetic','Thermal','Chemical'], answer:1,
+      explain:'A moving object has kinetic energy \u2014 energy due to its motion.' },
+    { subject:'PHY', q:'Sound cannot travel through:', options:['Air','Water','Steel','A vacuum'], answer:3,
+      explain:'Sound needs a medium to travel; a vacuum has no particles to carry the vibration.' },
+    // Chemistry
+    { subject:'CHEM', q:'What is the chemical symbol for sodium?', options:['So','Na','Sd','S'], answer:1,
+      explain:"Sodium's symbol, Na, comes from its Latin name 'natrium'." },
+    { subject:'CHEM', q:'Which of these is a chemical change?', options:['Melting ice','Boiling water','Rusting iron','Dissolving salt'], answer:2,
+      explain:'Rusting forms a new substance (iron oxide), making it a chemical change; the others are physical changes.' },
+    { subject:'CHEM', q:'A solution with pH 3 is:', options:['Strongly alkaline','Neutral','Weakly acidic','Strongly acidic'], answer:3,
+      explain:'pH values below 7 are acidic, and the further below 7, the stronger the acid \u2014 pH 3 is strongly acidic.' },
+    { subject:'CHEM', q:'What gas is usually produced when a metal reacts with a dilute acid?', options:['Oxygen','Hydrogen','Nitrogen','Carbon dioxide'], answer:1,
+      explain:'Metals reacting with dilute acids typically produce hydrogen gas.' },
+    // Biology
+    { subject:'BIO', q:'Which organelle is the site of photosynthesis?', options:['Mitochondria','Nucleus','Chloroplast','Ribosome'], answer:2,
+      explain:'Chloroplasts contain chlorophyll and are where photosynthesis takes place.' },
+    { subject:'BIO', q:'What is the basic structural unit of all living things?', options:['Tissue','Organ','Cell','Organism'], answer:2,
+      explain:'The cell is the basic structural and functional unit of life.' },
+    { subject:'BIO', q:'Which blood component helps fight infection?', options:['Red blood cells','White blood cells','Platelets','Plasma'], answer:1,
+      explain:'White blood cells are part of the immune system and help fight infection.' },
+    { subject:'BIO', q:'What process do living things use to release energy from glucose?', options:['Photosynthesis','Respiration','Transpiration','Excretion'], answer:1,
+      explain:'Respiration breaks down glucose to release energy, in both plants and animals.' },
+    // English
+    { subject:'ENG', q:'Which sentence is punctuated correctly?', options:['Its raining outside.','It\u2019s raining outside.','Its raining, outside.','Its\u2019 raining outside.'], answer:1,
+      explain:'\u201CIt\u2019s\u201D is the contraction of \u201Cit is\u201D. \u201CIts\u201D (no apostrophe) shows possession.' },
+    { subject:'ENG', q:'Choose the word that best completes: "She was too tired ___ continue."', options:['to','for','that','of'], answer:0,
+      explain:"'Too...to' is the correct construction here, e.g. 'too tired to continue'." },
+    { subject:'ENG', q:"Which word is a synonym for 'happy'?", options:['Furious','Joyful','Anxious','Weary'], answer:1,
+      explain:"'Joyful' means feeling or expressing happiness, making it a synonym." },
+    { subject:'ENG', q:'Which of these is spelled correctly?', options:['Recieve','Receive','Receeve','Receve'], answer:1,
+      explain:"The correct spelling is 'receive' \u2014 remember 'i before e except after c'." },
+    // Geography
+    { subject:'GEOG', q:'What is the imaginary line at 0\u00B0 longitude called?', options:['Equator','Prime Meridian','Tropic of Cancer','International Date Line'], answer:1,
+      explain:'The Prime Meridian is the line of 0\u00B0 longitude, passing through Greenwich, London.' },
+    { subject:'GEOG', q:'Which climate is known for very low annual rainfall?', options:['Tropical','Arid','Temperate','Polar'], answer:1,
+      explain:'Arid climates receive very little rainfall, typically found in deserts.' },
+    { subject:'GEOG', q:"What mainly causes Singapore's monsoon seasons?", options:['Ocean currents alone','Shifting wind belts','Volcanic activity','Tidal patterns'], answer:1,
+      explain:"Singapore's monsoon seasons are driven by seasonal shifts in wind belts (the Northeast and Southwest Monsoons)." },
+    { subject:'GEOG', q:'What term describes land being worn away by wind, water or ice?', options:['Deposition','Erosion','Precipitation','Condensation'], answer:1,
+      explain:'Erosion is the process by which soil and rock are worn away by natural forces.' },
+    // History
+    { subject:'HIST', q:'In what year did Singapore become an independent nation?', options:['1959','1963','1965','1971'], answer:2,
+      explain:'Singapore became independent on 9 August 1965.' },
+    { subject:'HIST', q:"Who was Singapore's first Prime Minister?", options:['Lee Kuan Yew','Yusof Ishak','Goh Chok Tong','S. Rajaratnam'], answer:0,
+      explain:"Lee Kuan Yew served as Singapore's first Prime Minister, from 1959." },
+    { subject:'HIST', q:'What was a major cause of World War I?', options:['The Cold War','Rising nationalism and alliances','The Great Depression','Decolonisation'], answer:1,
+      explain:'Rising nationalism and a web of military alliances were key factors that escalated the conflict.' },
+    { subject:'HIST', q:'Which empire ruled Singapore before the Japanese Occupation?', options:['Dutch','Portuguese','British','French'], answer:2,
+      explain:'Singapore was a British colony before falling to Japanese Occupation in 1942.' },
+    // Economics
+    { subject:'ECON', q:'What term describes the extra output from one more unit of input?', options:['Fixed cost','Marginal product','Total revenue','Gross profit'], answer:1,
+      explain:'Marginal product is the additional output from one more unit of a factor of production.' },
+    { subject:'ECON', q:"What is 'opportunity cost'?", options:['The price of an item','The next best alternative given up','Total cost of production','Cost after tax'], answer:1,
+      explain:'Opportunity cost is the value of the next best alternative you give up when making a choice.' },
+    { subject:'ECON', q:'GDP stands for:', options:['General Domestic Profit','Gross Domestic Product','Global Development Plan','Government Data Program'], answer:1,
+      explain:'GDP (Gross Domestic Product) measures the total value of goods and services produced in a country.' },
+    { subject:'ECON', q:'When demand exceeds supply at a given price, this creates a:', options:['Surplus','Shortage','Equilibrium','Recession'], answer:1,
+      explain:'A shortage occurs when quantity demanded is greater than quantity supplied at that price.' },
+    // Business
+    { subject:'BIZ', q:"What does 'B2B' stand for in business?", options:['Back to Basics','Business to Business','Bought to Bill','Base to Branch'], answer:1,
+      explain:'B2B (Business-to-Business) refers to transactions between two businesses.' },
+    { subject:'BIZ', q:"What is a 'sole proprietorship'?", options:['A business owned by one person','A business owned by shareholders','A government-run business','A charity organisation'], answer:0,
+      explain:'A sole proprietorship is a business owned and run by a single individual.' },
+    { subject:'BIZ', q:'The 4 Ps of the marketing mix are Product, Price, Place and:', options:['People','Promotion','Profit','Process'], answer:1,
+      explain:'The traditional marketing mix consists of Product, Price, Place, and Promotion.' },
+    { subject:'BIZ', q:"What is a business's 'break-even point'?", options:['Where profit is maximised','Where total revenue equals total cost','Where costs are zero','Where sales are highest'], answer:1,
+      explain:'The break-even point is where total revenue equals total costs \u2014 no profit, no loss.' },
+    // Mother Tongue (Chinese)
+    { subject:'MTL', q:'What does \u201C\u8C22\u8C22\u201D (xi\u00E8xi\u00E8) mean?', options:['Hello','Goodbye','Thank you','Sorry'], answer:2,
+      explain:'\u8C22\u8C22 (xi\u00E8xi\u00E8) means \u201Cthank you\u201D in Mandarin Chinese.' },
+    { subject:'MTL', q:'Which pinyin matches \u201C\u518D\u89C1\u201D?', options:['z\u00E0iji\u00E0n','x\u01D0hu\u0101n','du\u00EDb\u00F9q\u01D0','m\u00EDngti\u0101n'], answer:0,
+      explain:'\u518D\u89C1 is pronounced \u201Cz\u00E0iji\u00E0n\u201D and means \u201Cgoodbye\u201D.' },
+    { subject:'MTL', q:'Fill in the blank: \u4ED6 ___ \u5B66\u751F\u3002(He ___ a student.)', options:['\u662F','\u5F88','\u4E0D','\u4E5F'], answer:0,
+      explain:'\u201C\u662F\u201D (sh\u00EC) means \u201Cis/am/are\u201D, correctly completing \u4ED6\u662F\u5B66\u751F (He is a student).' },
+    { subject:'MTL', q:'What does \u201C\u82F9\u679C\u201D mean?', options:['Banana','Apple','Orange','Grape'], answer:1,
+      explain:'\u82F9\u679C (p\u00EDnggu\u01D2) means \u201Capple\u201D.' },
+  ];
+
+  /* =========================================================
+     DIFFICULTIES — adapted from ULTRAKILL's 6-tier difficulty
+     select screen. Each preset only scales existing numbers
+     (time budget, style decay speed, P payout) — question
+     content itself never changes, so there's no hidden
+     adaptive logic, just a fixed multiplier per choice.
+     ========================================================= */
+  const DIFFICULTIES = [
+    { key:'harmless', name:'HARMLESS', cat:'ACCESSIBLE', tag:'Absurdly generous. A slow, stress-free pace to practice at.', timeMul:1.6, decayMul:0.6, payoutMul:0.75 },
+    { key:'lenient',  name:'LENIENT',  cat:'ACCESSIBLE', tag:'A gentler pace with extra room to think it through.',       timeMul:1.3, decayMul:0.8, payoutMul:0.9 },
+    { key:'standard', name:'STANDARD', cat:'HARD',       tag:'The intended experience. Balanced pace, balanced reward.',  timeMul:1.0, decayMul:1.0, payoutMul:1.0 },
+    { key:'violent',  name:'VIOLENT',  cat:'HARD',       tag:'Faster pace, tighter timing, bigger payout for it.',       timeMul:0.75,decayMul:1.3, payoutMul:1.25 },
+    { key:'brutal',   name:'BRUTAL',   cat:'VERY HARD',  tag:'Ruthless timing windows. Only for the fully warmed up.',   timeMul:0.55,decayMul:1.6, payoutMul:1.5 },
+    { key:'ukmd',     name:'ULTRAKILL MUST DIE', cat:'VERY HARD', tag:'Still in development.', locked:true },
+  ];
+  function getDifficulty(key){ return DIFFICULTIES.find(function(d){return d.key===key;}) || DIFFICULTIES[2]; }
+
+  /* =========================================================
+     RANK TABLES — adapted from ULTRAKILL's Time / Kills / Style
+     end-of-level ranking system (D-C-B-A-S, with a Perfect
+     "P" rank for an all-S, zero-redo clear).
+     One style-rank name was softened for a school-safe demo
+     (SSShitstorm -> SSStorm); all others match the game.
+     ========================================================= */
+  const RANK_POINT  = { D:1, C:2, B:3, A:4, S:5 };
+  const RANK_COLOR  = { D:'#3aa0ff', C:'#39ff77', B:'#ffe066', A:'#ff9f1c', S:'#ff1f2b', P:'#ffd700' };
+  const RANK_ORDER  = ['D','C','B','A','S','P'];
+  const AGG_PAYOUT  = { D:200, C:500, B:1000, A:2000, S:3500, P:6000 };
+  const PAYOUT_BASELINE_QUESTIONS = 3; // the length the P values above were originally tuned for
+
+  const STYLE_TIERS = [
+    { key:'D',   name:'DESTRUCTIVE', min:0,    color:'#3aa0ff' },
+    { key:'C',   name:'CHAOTIC',     min:80,   color:'#39ff77' },
+    { key:'B',   name:'BRUTAL',      min:180,  color:'#ffe066' },
+    { key:'A',   name:'ANARCHIC',    min:320,  color:'#ff9f1c' },
+    { key:'S',   name:'SUPREME',     min:480,  color:'#ff1f2b' },
+    { key:'SS',  name:'SSAVAGE',     min:650,  color:'#ff3b3b' },
+    { key:'SSS', name:'SSSTORM',     min:850,  color:'#ff5c5c' },
+    { key:'UK',  name:'ULTRAKILL',   min:1080, color:'#ffd700' },
+  ];
+
+  const POWERUPS = {
+    scan: { id:'scan', name:'Intel Scan',  cost:800,  desc:'Removes two wrong options from your next question.' },
+    clk:  { id:'clk',  name:'Overclock',   cost:600,  desc:'Freezes the mission clock for your next question.' },
+    snd:  { id:'snd',  name:'Second Wind', cost:1200, desc:'Forgives your next wrong answer. Keeps Accuracy & Questions ranks intact — a Flawless run still needs zero mistakes.' },
+  };
+
+  /* =========================================================
+     PERSISTENT PLAYER STATE (browser localStorage only)
+     ========================================================= */
+  const STORAGE_KEY = 'v1training_player_v3';
+  const DEFAULT_PLAYER = {
+    screen:'dashboard',
+    xp:0, p:0, bestRank:null, sessions:0, streak:0,
+    inventory:{ scan:0, clk:0, snd:0 },
+    lastSetup:{ difficulty:'standard', subjects: SUBJECTS.map(function(s){return s.code;}), count:10 }
+  };
+
+  function loadPlayer(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return JSON.parse(JSON.stringify(DEFAULT_PLAYER));
+      const parsed = JSON.parse(raw);
+      const merged = Object.assign({}, DEFAULT_PLAYER, parsed);
+      merged.inventory = Object.assign({}, DEFAULT_PLAYER.inventory, parsed.inventory || {});
+      merged.lastSetup = Object.assign({}, DEFAULT_PLAYER.lastSetup, parsed.lastSetup || {});
+      if(!Array.isArray(merged.lastSetup.subjects) || merged.lastSetup.subjects.length===0){
+        merged.lastSetup.subjects = DEFAULT_PLAYER.lastSetup.subjects.slice();
+      }
+      // Never resume mid-mission on reload — land on a safe static screen.
+      if(merged.screen === 'practice' || merged.screen === 'overview') merged.screen = 'dashboard';
+      return merged;
+    }catch(e){ return JSON.parse(JSON.stringify(DEFAULT_PLAYER)); }
+  }
+  function savePlayer(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(player)); }catch(e){} }
+
+  let player = loadPlayer();
+
+  /* =========================================================
+     TRANSIENT MISSION STATE — in-memory only, fresh per run
+     ========================================================= */
+  let mission = null;
+  let styleDecayTimer = null;
+  let clockTimer = null;
+
+  function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } }
+
+  function buildSessionQuestions(pool, count){
+    const bag = [];
+    while(bag.length < count){
+      const shuffled = pool.slice();
+      shuffleArr(shuffled);
+      bag.push.apply(bag, shuffled);
+    }
+    return bag.slice(0, count);
+  }
+
+  function newMission(order, difficultyKey){
+    return {
+      order: order,
+      difficulty: difficultyKey,
+      index: 0,
+      attemptsThisQ: 0,
+      eliminatedThisQ: [],
+      overclockThisQ: false,
+      secondWindThisQ: false,
+      scanUsedThisQ: false,
+      status: 'live', // live | correct | wrong
+      results: [],     // per-question outcome records
+      styleScore: 0,
+      combo: 0,
+      accumMs: 0,      // banked solving time (ms) across resolved questions
+      qStartTs: 0,
+    };
+  }
+
+  /* =========================================================
+     SCREEN NAVIGATION
+     ========================================================= */
+  function showScreen(name){
+    player.screen = name;
+    document.querySelectorAll('.screen').forEach(function(el){
+      el.classList.toggle('active', el.id === 'screen-' + name);
+    });
+    savePlayer();
+  }
+
+  /* =========================================================
+     DASHBOARD RENDER
+     ========================================================= */
+  function levelClass(score){
+    if(score < 50) return 'level-low';
+    if(score < 70) return 'level-mid';
+    return 'level-high';
+  }
+
+  function renderSubjectList(){
+    const wrap = document.getElementById('subject-list');
+    wrap.innerHTML = '';
+    SUBJECTS.forEach(function(s){
+      const div = document.createElement('div');
+      div.className = 'panel chamfer-sm subject ' + levelClass(s.score);
+      div.innerHTML =
+        '<div class="row"><span class="name">'+s.name+'</span><span class="pct">'+s.score+'%</span></div>'+
+        '<div class="bar"><div class="fill" style="width:'+s.score+'%"></div></div>';
+      wrap.appendChild(div);
+    });
+  }
+
+  function renderDashboard(){
+    document.getElementById('stat-xp').textContent = player.xp;
+    document.getElementById('stat-p').textContent = player.p;
+    document.getElementById('stat-streak').textContent = player.streak;
+    document.getElementById('stat-sessions').textContent = player.sessions;
+    document.getElementById('shop-btn-p').textContent = player.p;
+    document.getElementById('hud-rank').textContent = player.bestRank || '—';
+
+    document.getElementById('best-rank-label').textContent =
+      player.bestRank ? (player.bestRank + ' — ' + (player.bestRank === 'P' ? 'PERFECT' : styleRankFullName(player.bestRank))) : 'No runs yet';
+
+    document.querySelectorAll('#rank-track .seg').forEach(function(seg){
+      const r = seg.getAttribute('data-rank');
+      const active = player.bestRank && RANK_ORDER.indexOf(r) <= RANK_ORDER.indexOf(player.bestRank);
+      seg.classList.toggle('active', !!active);
+      seg.style.background = active ? RANK_COLOR[r] : '';
+      seg.style.color = active ? '#07070a' : '';
+    });
+  }
+  function styleRankFullName(letter){
+    const map = { D:'Destructive', C:'Chaotic', B:'Brutal', A:'Anarchic', S:'Supreme' };
+    return map[letter] || letter;
+  }
+
+  /* =========================================================
+     MISSION SETUP
+     ========================================================= */
+  let setupState = null;
+
+  function openSetup(){
+    setupState = {
+      difficulty: player.lastSetup.difficulty,
+      subjects: player.lastSetup.subjects.slice(),
+      count: player.lastSetup.count
+    };
+    renderSetup();
+    showScreen('setup');
+  }
+
+  function renderSetup(){
+    const diffList = document.getElementById('difficulty-list');
+    diffList.innerHTML = '';
+    DIFFICULTIES.forEach(function(d){
+      const div = document.createElement('div');
+      div.className = 'panel chamfer-sm diff-item' + (d.key===setupState.difficulty ? ' selected':'') + (d.locked ? ' locked':'');
+      div.innerHTML =
+        '<div class="row"><span class="name">'+d.name+'</span><span class="cat">'+d.cat+'</span></div>'+
+        '<div class="tag">'+d.tag+'</div>';
+      if(!d.locked){
+        div.addEventListener('click', function(){ setupState.difficulty = d.key; renderSetup(); });
+      }
+      diffList.appendChild(div);
+    });
+
+    const subjGrid = document.getElementById('subject-grid');
+    subjGrid.innerHTML = '';
+    SUBJECTS.forEach(function(s){
+      const selected = setupState.subjects.indexOf(s.code) >= 0;
+      const div = document.createElement('div');
+      div.className = 'panel chamfer-sm subj-chip' + (selected ? ' selected':'');
+      div.innerHTML = '<div class="name">'+s.name+'</div><div class="score">'+s.score+'%</div>';
+      div.addEventListener('click', function(){
+        const idx = setupState.subjects.indexOf(s.code);
+        if(idx>=0){ setupState.subjects.splice(idx,1); } else { setupState.subjects.push(s.code); }
+        renderSetup();
+      });
+      subjGrid.appendChild(div);
+    });
+
+    document.getElementById('qcount-slider').value = setupState.count;
+    document.getElementById('qcount-label').textContent = setupState.count;
+  }
+
+  document.getElementById('qcount-slider').addEventListener('input', function(e){
+    setupState.count = parseInt(e.target.value, 10);
+    document.getElementById('qcount-label').textContent = setupState.count;
+  });
+
+  document.getElementById('btn-deploy').addEventListener('click', function(){
+    if(setupState.subjects.length === 0){
+      document.getElementById('setup-msg').textContent = 'Select at least one subject to deploy.';
+      return;
+    }
+    document.getElementById('setup-msg').textContent = '';
+    player.lastSetup = { difficulty:setupState.difficulty, subjects:setupState.subjects.slice(), count:setupState.count };
+    savePlayer();
+    startPractice(setupState);
+  });
+
+  document.getElementById('btn-setup-back').addEventListener('click', function(){ showScreen('dashboard'); });
+
+  /* =========================================================
+     PRACTICE — question flow
+     ========================================================= */
+  function startPractice(config){
+    const pool = QUESTIONS.filter(function(q){ return config.subjects.indexOf(q.subject) >= 0; });
+    const order = buildSessionQuestions(pool, config.count);
+    mission = newMission(order, config.difficulty);
+    document.getElementById('q-diff-pill').textContent = getDifficulty(config.difficulty).name;
+    renderLoadout();
+    renderQuestion();
+    startClock();
+    startStyleDecay();
+    showScreen('practice');
+  }
+
+  function currentQuestion(){ return mission.order[mission.index]; }
+
+  function startClock(){
+    stopClock();
+    clockTimer = setInterval(function(){
+      if(mission.status !== 'live'){ return; } // pause display during feedback / redo choice
+      const liveMs = Date.now() - mission.qStartTs;
+      renderClock(mission.accumMs + (mission.overclockThisQ ? 0 : liveMs));
+    }, 200);
+  }
+  function stopClock(){ if(clockTimer){ clearInterval(clockTimer); clockTimer = null; } }
+  function renderClock(ms){
+    const el = document.getElementById('mission-time');
+    const totalSec = Math.floor(ms/1000);
+    const mm = String(Math.floor(totalSec/60)).padStart(2,'0');
+    const ss = String(totalSec%60).padStart(2,'0');
+    el.textContent = 'TIME ' + mm + ':' + ss;
+    el.classList.toggle('frozen', !!mission.overclockThisQ);
+  }
+
+  function startStyleDecay(){
+    stopStyleDecay();
+    styleDecayTimer = setInterval(function(){
+      if(!mission || mission.status !== 'live') return;
+      const decayMul = getDifficulty(mission.difficulty).decayMul;
+      mission.styleScore = Math.max(0, Math.floor(mission.styleScore * (1 - 0.08*decayMul)) - Math.round(5*decayMul));
+      renderLiveStyle();
+    }, 1000);
+  }
+  function stopStyleDecay(){ if(styleDecayTimer){ clearInterval(styleDecayTimer); styleDecayTimer = null; } }
+
+  function styleTierIndex(score){
+    let idx = 0;
+    for(let i=0;i<STYLE_TIERS.length;i++){ if(score >= STYLE_TIERS[i].min) idx = i; }
+    return idx;
+  }
+
+  function renderLiveStyle(){
+    const idx = styleTierIndex(mission.styleScore);
+    const tier = STYLE_TIERS[idx];
+    document.getElementById('live-style-name').textContent = tier.name;
+    document.getElementById('live-style-name').style.color = tier.color;
+    document.getElementById('live-style-score').textContent = mission.styleScore;
+    const mult = Math.min(3, 1 + mission.combo * 0.4).toFixed(1);
+    document.getElementById('live-combo').textContent = 'x' + mult;
+
+    const track = document.getElementById('live-style-track');
+    track.innerHTML = '';
+    STYLE_TIERS.forEach(function(t,i){
+      const seg = document.createElement('div');
+      seg.className = 'seg' + (i<=idx ? ' active':'');
+      if(i<=idx){ seg.style.background = t.color; seg.style.color = t.color; seg.style.borderColor = t.color; }
+      track.appendChild(seg);
+    });
+  }
+
+  function renderLoadout(){
+    const bar = document.getElementById('loadout-bar');
+    bar.innerHTML = '';
+    Object.values(POWERUPS).forEach(function(pu){
+      const owned = player.inventory[pu.id] || 0;
+      const armedFlag = (pu.id==='scan' && mission.scanUsedThisQ) ||
+                         (pu.id==='clk'  && mission.overclockThisQ) ||
+                         (pu.id==='snd'  && mission.secondWindThisQ);
+      const btn = document.createElement('button');
+      btn.className = 'pu' + (armedFlag ? ' armed':'');
+      btn.disabled = owned <= 0 || armedFlag || mission.status !== 'live';
+      btn.innerHTML = '<b>'+pu.name.toUpperCase()+'</b>x'+owned;
+      btn.addEventListener('click', function(){ activatePowerup(pu.id); });
+      bar.appendChild(btn);
+    });
+  }
+
+  function activatePowerup(id){
+    if((player.inventory[id]||0) <= 0) return;
+    if(id === 'scan'){
+      const q = currentQuestion();
+      const wrongIdx = q.options.map(function(_,i){return i;}).filter(function(i){return i!==q.answer;});
+      shuffleArr(wrongIdx);
+      mission.eliminatedThisQ = wrongIdx.slice(0,2);
+      mission.scanUsedThisQ = true;
+      player.inventory.scan -= 1;
+      renderOptions();
+    } else if(id === 'clk'){
+      mission.overclockThisQ = true;
+      player.inventory.clk -= 1;
+    } else if(id === 'snd'){
+      mission.secondWindThisQ = true;
+      player.inventory.snd -= 1;
+    }
+    savePlayer();
+    renderLoadout();
+  }
+
+  function renderQuestion(){
+    mission.status = 'live';
+    mission.attemptsThisQ = 0;
+    mission.eliminatedThisQ = [];
+    mission.overclockThisQ = false;
+    mission.secondWindThisQ = false;
+    mission.scanUsedThisQ = false;
+    mission.qStartTs = Date.now();
+
+    const q = currentQuestion();
+    document.getElementById('q-progress').textContent = 'QUESTION ' + (mission.index+1) + '/' + mission.order.length;
+    document.getElementById('q-subject').textContent = subjectName(q.subject).toUpperCase();
+    document.getElementById('q-text').textContent = q.q;
+    renderOptions();
+    renderLiveStyle();
+    renderLoadout();
+    renderClock(mission.accumMs);
+  }
+
+  function renderOptions(){
+    const q = currentQuestion();
+    const wrap = document.getElementById('q-options');
+    wrap.innerHTML = '';
+    const letters = ['A','B','C','D'];
+    q.options.forEach(function(opt,i){
+      const b = document.createElement('button');
+      b.className = 'option' + (mission.eliminatedThisQ.indexOf(i)>=0 ? ' eliminated':'');
+      b.disabled = mission.status !== 'live' || mission.eliminatedThisQ.indexOf(i)>=0;
+      b.innerHTML = '<span class="k">'+letters[i]+'</span><span>'+opt+'</span>';
+      b.addEventListener('click', function(){ submitAnswer(i); });
+      wrap.appendChild(b);
+    });
+  }
+
+  function submitAnswer(i){
+    if(mission.status !== 'live') return;
+    const q = currentQuestion();
+    const elapsedMs = Date.now() - mission.qStartTs;
+    mission.attemptsThisQ += 1;
+
+    if(!mission.overclockThisQ){ mission.accumMs += elapsedMs; }
+    renderClock(mission.accumMs);
+
+    if(i === q.answer){
+      handleCorrect(elapsedMs);
+    } else {
+      handleWrong(i);
+    }
+  }
+
+  function handleCorrect(elapsedMs){
+    const speed = Math.max(40, Math.round(320 - (elapsedMs/1000)*18));
+    const mult = Math.min(3, 1 + mission.combo*0.4);
+    const gain = Math.round(speed*mult);
+    mission.styleScore += gain;
+    mission.combo += 1;
+
+    const firstTry = mission.attemptsThisQ === 1;
+    const outcome = firstTry ? 'FIRST_TRY_CORRECT' : 'REDONE_THEN_CORRECT';
+    mission.results.push({ outcome:outcome, attempts:mission.attemptsThisQ });
+
+    player.xp += 100;
+    player.streak += 1;
+    savePlayer();
+
+    mission.status = 'correct';
+    renderLiveStyle();
+    renderLoadout();
+
+    const wrap = document.getElementById('q-options');
+    wrap.innerHTML =
+      '<div class="feedback-panel">'+
+        '<span class="feedback-tag ok">\u2713 CORRECT</span>'+
+        '<div class="feedback-gains">+100 <span>XP</span> &nbsp;\u00B7&nbsp; +'+gain+' <span>STYLE</span></div>'+
+        '<button class="btn btn-primary chamfer" id="btn-continue">Continue</button>'+
+      '</div>';
+    document.getElementById('btn-continue').addEventListener('click', advanceMission);
+  }
+
+  function handleWrong(i){
+    const q = currentQuestion();
+
+    if(mission.secondWindThisQ){
+      mission.secondWindThisQ = false;
+      mission.combo = 0;
+      mission.results.push({ outcome:'SECOND_WIND_SAVED', attempts:mission.attemptsThisQ });
+      player.xp += 100;
+      player.streak += 1;
+      savePlayer();
+      mission.status = 'correct';
+      renderLoadout();
+      const wrap = document.getElementById('q-options');
+      wrap.innerHTML =
+        '<div class="feedback-panel">'+
+          '<span class="feedback-tag sw">\u26A1 SECOND WIND</span>'+
+          '<div class="feedback-explain">Mistake forgiven. The correct answer was: <b>'+q.options[q.answer]+'</b>. '+q.explain+'</div>'+
+          '<button class="btn btn-primary chamfer" id="btn-continue">Continue</button>'+
+        '</div>';
+      document.getElementById('btn-continue').addEventListener('click', advanceMission);
+      return;
+    }
+
+    mission.styleScore = Math.max(0, Math.floor(mission.styleScore*0.5));
+    mission.combo = 0;
+    player.streak = 0;
+    savePlayer();
+    renderLiveStyle();
+
+    mission.status = 'wrong';
+    const wrap = document.getElementById('q-options');
+    wrap.innerHTML =
+      '<div class="feedback-panel">'+
+        '<span class="feedback-tag bad">\u2717 INCORRECT</span>'+
+        '<div class="feedback-explain">The correct answer was: <b>'+q.options[q.answer]+'</b>. '+q.explain+'</div>'+
+        '<div class="choice-row">'+
+          '<button class="btn btn-ghost chamfer" id="btn-retry" style="flex:1;">Retry Question</button>'+
+          '<button class="btn btn-primary chamfer" id="btn-accept" style="flex:1;">Accept · +500P</button>'+
+        '</div>'+
+      '</div>';
+    document.getElementById('btn-retry').addEventListener('click', retryQuestion);
+    document.getElementById('btn-accept').addEventListener('click', acceptAndContinue);
+  }
+
+  function retryQuestion(){
+    mission.status = 'live';
+    mission.qStartTs = Date.now();
+    renderOptions();
+    renderLoadout();
+  }
+
+  function acceptAndContinue(){
+    mission.results.push({ outcome:'ACCEPTED_WRONG', attempts:mission.attemptsThisQ });
+    mission.status = 'correct';
+    advanceMission();
+  }
+
+  function advanceMission(){
+    if(mission.index < mission.order.length-1){
+      mission.index += 1;
+      renderQuestion();
+    } else {
+      finishMission();
+    }
+  }
+
+  /* =========================================================
+     MISSION COMPLETE — rank + P payout calculation
+     ========================================================= */
+  function rankFromTime(ms, numQuestions, timeMul){
+    const s = ms/1000;
+    const S = 7*numQuestions*timeMul, A = 12*numQuestions*timeMul, B = 18*numQuestions*timeMul, C = 26*numQuestions*timeMul;
+    if(s<=S) return 'S';
+    if(s<=A) return 'A';
+    if(s<=B) return 'B';
+    if(s<=C) return 'C';
+    return 'D';
+  }
+  // Shared by QUESTIONS (clean-of-total) and ACCURACY (correct-of-total).
+  function rankFromRatio(count, total){
+    if(count>=total) return 'S';
+    const ratio = count/total;
+    if(ratio>=0.85) return 'A';
+    if(ratio>=0.6)  return 'B';
+    if(ratio>=0.35) return 'C';
+    return 'D';
+  }
+  function aggregateRank(t,c,a,redoneQuestions){
+    if(t==='S' && c==='S' && a==='S' && redoneQuestions===0) return 'P';
+    const sum = RANK_POINT[t]+RANK_POINT[c]+RANK_POINT[a];
+    if(sum>=14) return 'S';
+    if(sum>=11) return 'A';
+    if(sum>=8)  return 'B';
+    if(sum>=5)  return 'C';
+    return 'D';
+  }
+
+  function finishMission(){
+    stopClock(); stopStyleDecay();
+    player.sessions += 1;
+
+    const total = mission.order.length;
+    let redoneQuestions = 0, accCount = 0, noRedoCount = 0, flawless = true;
+    mission.results.forEach(function(r){
+      if(r.outcome === 'FIRST_TRY_CORRECT'){ accCount++; }
+      else if(r.outcome === 'REDONE_THEN_CORRECT'){ redoneQuestions++; flawless=false; }
+      else if(r.outcome === 'ACCEPTED_WRONG'){ noRedoCount++; flawless=false; }
+      else if(r.outcome === 'SECOND_WIND_SAVED'){ accCount++; flawless=false; }
+    });
+    const cleanCount = total - redoneQuestions;
+
+    const diff = getDifficulty(mission.difficulty);
+    const timeRank = rankFromTime(mission.accumMs, total, diff.timeMul);
+    const qRank = rankFromRatio(cleanCount, total);
+    const accRank = rankFromRatio(accCount, total);
+    const agg = aggregateRank(timeRank, qRank, accRank, redoneQuestions);
+
+    const lengthScale = total / PAYOUT_BASELINE_QUESTIONS;
+    const basePayout = Math.round(AGG_PAYOUT[agg] * diff.payoutMul * lengthScale);
+    const noRedoPayout = noRedoCount*500;
+    const flawlessPayout = flawless ? 5000 : 0;
+    const stylePayout = Math.round(mission.styleScore*0.5);
+    const totalP = basePayout + noRedoPayout + flawlessPayout + stylePayout;
+    const xpEarned = mission.results.filter(function(r){return r.outcome!=='ACCEPTED_WRONG';}).length*100;
+
+    player.p += totalP;
+    if(!player.bestRank || RANK_ORDER.indexOf(agg) > RANK_ORDER.indexOf(player.bestRank)){
+      player.bestRank = agg;
+    }
+    savePlayer();
+
+    showScreen('overview');
+    playOverviewSequence({
+      agg:agg, timeRank:timeRank, qRank:qRank, accRank:accRank, total:total,
+      timeMs:mission.accumMs, cleanCount:cleanCount, accCount:accCount,
+      basePayout:basePayout, noRedoPayout:noRedoPayout, flawlessPayout:flawlessPayout,
+      stylePayout:stylePayout, totalP:totalP, xpEarned:xpEarned, flawless:flawless
+    });
+  }
+
+  const OVERVIEW_MSGS = {
+    P:'"Perfect clear. That\u2019s a flawless run, V1 — textbook."',
+    S:'"Supreme work. You\u2019re outpacing where you started."',
+    A:'"Strong drill. Keep stacking reps like that."',
+    B:'"Solid clear. A little more speed and it\u2019s an A."',
+    C:'"You got through it. Next run, aim to retry less."',
+    D:'"Rough one — but you finished the mission. That\u2019s the part that counts."'
+  };
+
+  /* ---- animation helpers ---- */
+  function sleep(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
+
+  // Animates a number from `from` to `to`, writing through formatFn each frame.
+  function countUp(el, from, to, duration, formatFn){
+    return new Promise(function(resolve){
+      if(duration<=0 || from===to){ el.textContent = formatFn(to); resolve(); return; }
+      const start = performance.now();
+      function tick(now){
+        const t = Math.min(1, (now-start)/duration);
+        const eased = 1 - Math.pow(1-t, 3);
+        el.textContent = formatFn(from + (to-from)*eased);
+        if(t<1){ requestAnimationFrame(tick); } else { resolve(); }
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  // White flash -> tween into the rank's real color, then the letter appears.
+  function revealRank(el, rank){
+    return new Promise(function(resolve){
+      el.style.transition = 'none';
+      el.style.background = '#ffffff';
+      el.style.color = '#ffffff';
+      el.textContent = '';
+      void el.offsetWidth; // force reflow so the flash actually paints before tweening
+      setTimeout(function(){
+        el.style.transition = 'background-color .4s ease, color .4s ease';
+        el.style.background = RANK_COLOR[rank];
+        el.style.color = '#07070a';
+        el.textContent = rank;
+        setTimeout(resolve, 420);
+      }, 140);
+    });
+  }
+
+  function resetOverviewUI(total){
+    ['badge-time','badge-q','badge-acc'].forEach(function(id){
+      const el = document.getElementById(id);
+      el.style.transition = 'none';
+      el.style.background = 'var(--bg2)';
+      el.style.color = 'var(--grey)';
+      el.textContent = '–';
+    });
+    const stamp = document.getElementById('agg-rank-stamp');
+    stamp.style.transition = 'none';
+    stamp.style.animation = 'none';
+    stamp.style.background = 'transparent';
+    stamp.style.color = 'var(--line)';
+    stamp.textContent = '–';
+    document.getElementById('val-time').textContent = '00:00';
+    document.getElementById('val-q').textContent = '0/'+total;
+    document.getElementById('val-acc').textContent = '0/'+total;
+    document.getElementById('progress-msg').textContent = '';
+    ['p-base','p-style','p-noredo','p-flawless'].forEach(function(id){
+      const el = document.getElementById(id);
+      el.textContent = '+0 P';
+      el.closest('.p-line').style.opacity = 0;
+    });
+    document.getElementById('p-total').textContent = '+0 P';
+    document.getElementById('xp-earned').textContent = '+0 XP';
+  }
+
+  function renderOverviewInstant(r){
+    // Reduced-motion / fallback path: same end state, no sequencing.
+    resetOverviewUI(r.total);
+    document.getElementById('badge-time').style.background = RANK_COLOR[r.timeRank];
+    document.getElementById('badge-time').style.color = '#07070a';
+    document.getElementById('badge-time').textContent = r.timeRank;
+    document.getElementById('badge-q').style.background = RANK_COLOR[r.qRank];
+    document.getElementById('badge-q').style.color = '#07070a';
+    document.getElementById('badge-q').textContent = r.qRank;
+    document.getElementById('badge-acc').style.background = RANK_COLOR[r.accRank];
+    document.getElementById('badge-acc').style.color = '#07070a';
+    document.getElementById('badge-acc').textContent = r.accRank;
+    const stamp = document.getElementById('agg-rank-stamp');
+    stamp.style.background = RANK_COLOR[r.agg];
+    stamp.style.color = '#07070a';
+    stamp.textContent = r.agg;
+
+    const totalSec = Math.floor(r.timeMs/1000);
+    document.getElementById('val-time').textContent = String(Math.floor(totalSec/60)).padStart(2,'0')+':'+String(totalSec%60).padStart(2,'0');
+    document.getElementById('val-q').textContent = r.cleanCount+'/'+r.total;
+    document.getElementById('val-acc').textContent = r.accCount+'/'+r.total;
+    document.getElementById('p-base').textContent = '+'+r.basePayout+' P';
+    document.getElementById('p-style').textContent = '+'+r.stylePayout+' P';
+    document.getElementById('p-noredo').textContent = '+'+r.noRedoPayout+' P';
+    document.getElementById('p-flawless').textContent = '+'+r.flawlessPayout+' P';
+    document.querySelectorAll('.p-line').forEach(function(el){ el.style.opacity = 1; });
+    document.getElementById('p-total').textContent = '+'+r.totalP+' P';
+    document.getElementById('xp-earned').textContent = '+'+r.xpEarned+' XP';
+    document.getElementById('progress-msg').textContent = OVERVIEW_MSGS[r.agg] || OVERVIEW_MSGS.D;
+  }
+
+  // The full ULTRAKILL-style end-of-level sequence: each category counts up,
+  // then flashes white and tweens into its rank color, one after another —
+  // finishing with the aggregate rank, then the P bonuses ticking the total up.
+  async function playOverviewSequence(r){
+    resetOverviewUI(r.total);
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      renderOverviewInstant(r);
+      return;
+    }
+
+    const totalSec = Math.floor(r.timeMs/1000);
+    const timeEl = document.getElementById('val-time');
+    await countUp(timeEl, 0, totalSec, 700, function(v){
+      const s = Math.floor(v);
+      return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+    });
+    await sleep(120);
+    await revealRank(document.getElementById('badge-time'), r.timeRank);
+    await sleep(350);
+
+    const qEl = document.getElementById('val-q');
+    await countUp(qEl, 0, r.cleanCount, 500, function(v){ return Math.round(v)+'/'+r.total; });
+    await sleep(120);
+    await revealRank(document.getElementById('badge-q'), r.qRank);
+    await sleep(350);
+
+    const accEl = document.getElementById('val-acc');
+    await countUp(accEl, 0, r.accCount, 500, function(v){ return Math.round(v)+'/'+r.total; });
+    await sleep(120);
+    await revealRank(document.getElementById('badge-acc'), r.accRank);
+    await sleep(500);
+
+    const stamp = document.getElementById('agg-rank-stamp');
+    await revealRank(stamp, r.agg);
+    void stamp.offsetWidth;
+    stamp.style.animation = '';
+    document.getElementById('progress-msg').textContent = OVERVIEW_MSGS[r.agg] || OVERVIEW_MSGS.D;
+    await sleep(650);
+
+    const totalEl = document.getElementById('p-total');
+    let running = 0;
+    const lines = [
+      { id:'p-base', amount:r.basePayout },
+      { id:'p-style', amount:r.stylePayout },
+      { id:'p-noredo', amount:r.noRedoPayout },
+      { id:'p-flawless', amount:r.flawlessPayout }
+    ];
+    for(const line of lines){
+      const rowEl = document.getElementById(line.id).closest('.p-line');
+      document.getElementById(line.id).textContent = '+'+line.amount+' P';
+      rowEl.style.transition = 'opacity .25s ease';
+      rowEl.style.opacity = line.amount>0 ? 1 : 0.35;
+      if(line.amount>0){
+        const before = running;
+        running += line.amount;
+        await countUp(totalEl, before, running, 450, function(v){ return '+'+Math.round(v)+' P'; });
+        await sleep(260);
+      } else {
+        await sleep(120);
+      }
+    }
+    totalEl.textContent = '+'+r.totalP+' P';
+    document.getElementById('xp-earned').textContent = '+'+r.xpEarned+' XP';
+  }
+
+  /* =========================================================
+     SHOP / TERMINAL
+     ========================================================= */
+  function renderShop(msg){
+    document.getElementById('shop-p-balance').textContent = player.p;
+    document.getElementById('shop-msg').textContent = msg || '';
+    const list = document.getElementById('shop-list');
+    list.innerHTML = '';
+    Object.values(POWERUPS).forEach(function(pu){
+      const owned = player.inventory[pu.id] || 0;
+      const canAfford = player.p >= pu.cost;
+      const div = document.createElement('div');
+      div.className = 'panel chamfer-sm shop-item';
+      div.innerHTML =
+        '<div class="row"><span class="name">'+pu.name+'</span><span class="cost">'+pu.cost+' P</span></div>'+
+        '<div class="desc">'+pu.desc+'</div>'+
+        '<div class="row"><span class="owned">OWNED &times; '+owned+'</span></div>'+
+        '<button class="btn '+(canAfford?'btn-primary':'btn-ghost')+' chamfer" data-id="'+pu.id+'" '+(canAfford?'':'disabled')+'>Buy</button>';
+      list.appendChild(div);
+    });
+    list.querySelectorAll('button[data-id]').forEach(function(btn){
+      btn.addEventListener('click', function(){ buyPowerup(btn.getAttribute('data-id')); });
+    });
+  }
+  function buyPowerup(id){
+    const pu = POWERUPS[id];
+    if(player.p < pu.cost){ renderShop('Not enough P for '+pu.name+'.'); return; }
+    player.p -= pu.cost;
+    player.inventory[id] = (player.inventory[id]||0) + 1;
+    savePlayer();
+    renderShop(pu.name+' acquired.');
+  }
+
+  /* =========================================================
+     WIRE UP NAVIGATION
+     ========================================================= */
+  document.getElementById('btn-start-practice').addEventListener('click', openSetup);
+  document.getElementById('btn-open-shop').addEventListener('click', function(){ renderShop(); showScreen('shop'); });
+  document.getElementById('btn-quit-practice').addEventListener('click', function(){
+    if(confirm('Abort this mission? Progress on this run will be lost.')){
+      stopClock(); stopStyleDecay();
+      renderDashboard();
+      showScreen('dashboard');
+    }
+  });
+  document.getElementById('btn-practice-again').addEventListener('click', openSetup);
+  document.getElementById('btn-goto-shop').addEventListener('click', function(){ renderShop(); showScreen('shop'); });
+  document.getElementById('btn-back-base').addEventListener('click', function(){ renderDashboard(); showScreen('dashboard'); });
+  document.getElementById('btn-shop-back').addEventListener('click', function(){ renderDashboard(); showScreen('dashboard'); });
+
+  /* =========================================================
+     BOOT
+     ========================================================= */
+  renderSubjectList();
+  renderDashboard();
+  showScreen(player.screen || 'dashboard');
+  if(player.screen === 'shop') renderShop();
+  if(player.screen === 'setup') openSetup();
+
+})();
+</script>
+</body>
+</html>

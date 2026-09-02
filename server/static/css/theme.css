@@ -1,0 +1,93 @@
+/* =========================================================
+   V1//TRAINING — shared theme
+   Common variables and building blocks used by both index.html
+   (the practice app) and admin.html (the question manager).
+   Page-specific layout and components live in app.css / admin.css.
+   ========================================================= */
+
+:root{
+  --bg:#07070a;
+  --bg2:#0c0c10;
+  --panel:#0e0e12;
+  --panel-hi:#151519;
+  --line:#2a2a30;
+  --red:#ff1f2b;
+  --red-dim:#5c0d13;
+  --red-glow:rgba(255,31,43,.45);
+  --white:#f2f2ef;
+  --grey:#95959c;
+  --amber:#ffb703;
+  --green:#39ff6a;
+  --gold:#ffd700;
+  --font-display:"Arial Narrow", Arial, sans-serif;
+  --font-mono:"Courier New", Courier, monospace;
+  --chamfer:10px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--font-display);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Chamfered "armor plate" corners — the signature panel shape */
+.chamfer{
+  clip-path:polygon(var(--chamfer) 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, 0 100%, 0 var(--chamfer));
+}
+.chamfer-sm{
+  clip-path:polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+.panel{
+  background:linear-gradient(180deg, var(--panel-hi), var(--panel));
+  border:1px solid var(--line);
+  padding:16px;
+}
+
+/* Header bar */
+.hud-top{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; margin-bottom:14px;
+  background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--red);
+}
+.brand{
+  font-weight:900; font-size:20px; letter-spacing:1px; text-transform:uppercase;
+  transform:skewX(-8deg); display:flex; align-items:baseline; gap:6px;
+}
+.brand .v1{ color:var(--red); }
+.brand small{
+  font-family:var(--font-mono); font-size:10px; color:var(--grey);
+  letter-spacing:2px; transform:skewX(0deg);
+}
+.mark{
+  width:26px; height:26px; flex:none; background:var(--red);
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+  position:relative; box-shadow:0 0 12px var(--red-glow);
+}
+.mark::after{
+  content:''; position:absolute; inset:8px; background:var(--bg);
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+}
+
+/* Section headers with a trailing rule */
+.section-label{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:3px; color:var(--red);
+  text-transform:uppercase; margin:18px 0 8px 2px; display:flex; align-items:center; gap:8px;
+}
+.section-label::after{
+  content:''; flex:1; height:1px;
+  background:linear-gradient(to right, var(--line), transparent);
+}
+
+/* Inline status text — shared spacing/typography, color is set per-context */
+.inline-msg{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:1px;
+  min-height:14px; margin:6px 0;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition:none !important; }
+}

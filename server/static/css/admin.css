@@ -1,0 +1,66 @@
+/* =========================================================
+   V1//TRAINING — admin (question manager) styles
+   Shared building blocks live in theme.css. This file is
+   everything specific to the teacher-facing admin page.
+   ========================================================= */
+
+.app{ max-width:760px; margin:0 auto; padding:20px 16px 60px; }
+.hud-top a{ font-family:var(--font-mono); font-size:11px; color:var(--grey); text-decoration:none; border:1px solid var(--line); padding:6px 10px; }
+.hud-top a:hover{ color:var(--white); border-color:var(--grey); }
+
+label{ display:block; font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; color:var(--grey); text-transform:uppercase; margin:14px 0 6px; }
+label:first-child{ margin-top:0; }
+input[type=text], textarea, select{
+  width:100%; background:var(--bg2); border:1px solid var(--line); color:var(--white);
+  font-family:var(--font-display); font-size:14px; padding:10px 12px; border-radius:0;
+}
+textarea{ resize:vertical; min-height:52px; }
+input[type=text]:focus, textarea:focus, select:focus{ outline:none; border-color:var(--red-dim); }
+.option-row{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.option-row input[type=radio]{ flex:none; width:18px; height:18px; accent-color:var(--red); }
+.option-row input[type=text]{ flex:1; }
+.option-row .k{ font-family:var(--font-mono); color:var(--red); font-weight:900; width:14px; flex:none; }
+
+.btn{
+  display:inline-block; border:none; cursor:pointer; font-family:var(--font-display); font-weight:900;
+  text-transform:uppercase; letter-spacing:2px; font-size:14px; padding:13px 22px; text-align:center;
+}
+.btn-primary{ background:var(--red); color:var(--bg); box-shadow:0 0 18px var(--red-glow); margin-top:16px; }
+.btn-primary:hover{ filter:brightness(1.12); }
+.btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+.btn-danger{
+  background:transparent; color:var(--red); border:1px solid var(--red-dim);
+  font-size:11px; padding:7px 12px; letter-spacing:1px; cursor:pointer;
+}
+.btn-danger:hover{ background:var(--red-dim); color:var(--white); }
+.btn-danger:disabled{ opacity:.5; cursor:not-allowed; }
+
+.inline-msg.err{ color:var(--red); }
+.inline-msg.ok{ color:var(--green); }
+
+.filter-row{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+.filter-row select{ flex:1; }
+.filter-row .count{ font-family:var(--font-mono); font-size:11px; color:var(--grey); white-space:nowrap; }
+
+.qcard{ padding:14px; margin-bottom:10px; }
+.qcard .top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.qcard .subj{
+  display:inline-block; padding:2px 8px; font-family:var(--font-mono); font-size:10px;
+  letter-spacing:1px; background:var(--red-dim); color:var(--white); margin-bottom:8px;
+}
+.ai-badge{
+  display:inline-block; padding:2px 8px; font-family:var(--font-mono); font-size:10px;
+  letter-spacing:1px; background:var(--amber); color:var(--bg); font-weight:700;
+  margin-bottom:8px; margin-left:6px;
+}
+.ai-note{
+  font-family:var(--font-mono); font-size:11px; color:var(--amber); line-height:1.5;
+  border-left:2px solid var(--amber); padding-left:8px; margin:10px 0;
+}
+.qcard .qtext{ font-size:15px; font-weight:700; line-height:1.4; margin-bottom:8px; }
+.qcard .opts{ font-family:var(--font-mono); font-size:12px; color:var(--grey); line-height:1.8; }
+.qcard .opts .correct{ color:var(--green); font-weight:700; }
+.qcard .explain{ font-family:var(--font-mono); font-size:11px; color:var(--grey); margin-top:8px; border-left:2px solid var(--line); padding-left:8px; line-height:1.5; }
+
+.empty-note{ font-family:var(--font-mono); font-size:12px; color:var(--grey); text-align:center; padding:24px 0; }
+footer.tiny{ margin-top:30px; text-align:center; font-family:var(--font-mono); font-size:9px; letter-spacing:2px; color:#3a3a40; }

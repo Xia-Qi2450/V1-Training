@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>V1//TRAINING — Practice Drills</title>
+<link rel="stylesheet" href="/static/css/theme.css">
+<link rel="stylesheet" href="/static/css/app.css">
+
+</head>
+<body>
+<div class="fx-overlay"></div>
+<div class="app">
+
+  <div class="hud-top">
+    <div class="brand">
+      <div class="mark"></div>
+      <span class="v1">V1</span><span>//TRAINING</span>
+      <small>DRILL SIM</small>
+    </div>
+    <div class="rank-chip">BEST<span class="r" id="hud-rank">—</span></div>
+  </div>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <section class="screen active" id="screen-dashboard">
+
+    <div class="panel chamfer profile">
+      <div class="profile-name">Alex Tan</div>
+      <div class="profile-meta"><b>Secondary 3</b> · Yishun Meridian Sec</div>
+      <span class="cca-tag">CCA · Infocomm Club</span>
+
+      <div class="stat-strip">
+        <div class="stat xp"><div class="num" id="stat-xp">0</div><div class="lbl">XP</div></div>
+        <div class="stat pcur"><div class="num" id="stat-p">0</div><div class="lbl">P</div></div>
+        <div class="stat streak"><div class="num" id="stat-streak">0</div><div class="lbl">Streak</div></div>
+        <div class="stat"><div class="num" id="stat-sessions">0</div><div class="lbl">Missions</div></div>
+      </div>
+    </div>
+
+    <div class="panel chamfer style-meter">
+      <div class="row">
+        <span class="title">Best Mission Rank</span>
+        <span class="current" id="best-rank-label">No runs yet</span>
+      </div>
+      <div class="rank-track" id="rank-track">
+        <div class="seg" data-rank="D">D</div>
+        <div class="seg" data-rank="C">C</div>
+        <div class="seg" data-rank="B">B</div>
+        <div class="seg" data-rank="A">A</div>
+        <div class="seg" data-rank="S">S</div>
+        <div class="seg" data-rank="P">P</div>
+      </div>
+    </div>
+
+    <div class="section-label">Subject Drills</div>
+    <div id="subject-list"></div>
+
+    <p class="encourage" id="dash-encourage">"Every rep sharpens the blade. Get in there, V1."</p>
+
+    <button class="btn btn-primary chamfer" id="btn-start-practice">Start Practice</button>
+    <button class="btn btn-ghost chamfer" id="btn-open-shop">Terminal (Shop) · <span id="shop-btn-p">0</span> P</button>
+
+    <p class="disclaimer">Prototype for demonstration only. Not a diagnostic or mental-health monitoring tool. Progress shown is illustrative, not a performance guarantee.</p>
+  </section>
+
+  <!-- ===================== MISSION SETUP ===================== -->
+  <section class="screen" id="screen-setup">
+    <div class="section-label">Select Difficulty</div>
+    <div id="difficulty-list"></div>
+
+    <div class="section-label">Select Subjects</div>
+    <div class="subject-grid" id="subject-grid"></div>
+
+    <div class="section-label">Mission Length</div>
+    <div class="panel chamfer-sm qcount-panel">
+      <div class="row">
+        <span class="lbl">Questions</span>
+        <span class="val" id="qcount-label">10</span>
+      </div>
+      <input type="range" min="5" max="30" step="1" value="10" id="qcount-slider">
+      <div class="minmax"><span>5 (Quick)</span><span>30 (Full)</span></div>
+    </div>
+
+    <p class="inline-msg" id="setup-msg"></p>
+
+    <button class="btn btn-primary chamfer" id="btn-deploy">Deploy Mission</button>
+    <button class="btn btn-ghost" id="btn-setup-back">Back to Base</button>
+  </section>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <section class="screen" id="screen-practice">
+    <div class="quiz-hud">
+      <span><span class="qtag" id="q-progress">QUESTION 1/10</span> <span class="diff-pill" id="q-diff-pill">STANDARD</span></span>
+      <span class="time" id="mission-time">TIME 00:00</span>
+    </div>
+
+    <div class="panel chamfer-sm live-style">
+      <div class="row" style="display:flex;justify-content:space-between;">
+        <span class="title" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--grey);text-transform:uppercase;">Style</span>
+        <span class="current" id="live-style-name" style="font-weight:900;font-size:12px;letter-spacing:1px;">DESTRUCTIVE</span>
+      </div>
+      <div class="track8" id="live-style-track"></div>
+      <div class="meta"><span>SCORE <b id="live-style-score">0</b></span><span>COMBO <b id="live-combo">x1.0</b></span></div>
+    </div>
+
+    <div class="loadout" id="loadout-bar"></div>
+
+    <div class="panel chamfer" style="padding:18px;" id="question-card">
+      <span class="subj-pill" id="q-subject">MATHEMATICS</span>
+      <span class="ai-pill" id="q-ai-pill" style="display:none;">⚠ AI GENERATED — MAY CONTAIN MISTAKES</span>
+      <div class="question-text" id="q-text">—</div>
+      <div class="options" id="q-options"></div>
+    </div>
+
+    <button class="btn btn-ghost" id="btn-quit-practice">Abort Mission</button>
+  </section>
+
+  <!-- ===================== OVERVIEW (MISSION COMPLETE) ===================== -->
+  <section class="screen" id="screen-overview">
+    <div class="panel chamfer result-hero">
+      <div class="tag">Mission Complete</div>
+      <div class="rank-stamp" id="agg-rank-stamp">S</div>
+    </div>
+
+    <div class="panel chamfer-sm breakdown" style="margin-top:10px;">
+      <div class="breakdown-row">
+        <span class="name"><span class="badge" id="badge-time">S</span>Time</span>
+        <span class="val" id="val-time">0:00</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name"><span class="badge" id="badge-q">S</span>Questions</span>
+        <span class="val" id="val-q">0/10</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="name"><span class="badge" id="badge-acc">S</span>Accuracy</span>
+        <span class="val" id="val-acc">0/10</span>
+      </div>
+    </div>
+
+    <div class="panel chamfer-sm p-lines">
+      <div class="p-line"><span>Rank Payout</span><b id="p-base">+0 P</b></div>
+      <div class="p-line"><span>Style Bonus</span><b id="p-style">+0 P</b></div>
+      <div class="p-line"><span>No-Redo Bonus</span><b id="p-noredo">+0 P</b></div>
+      <div class="p-line"><span>Flawless Bonus</span><b id="p-flawless">+0 P</b></div>
+      <div class="p-total"><span>Total earned · <span id="xp-earned">+0 XP</span></span><b id="p-total">+0 P</b></div>
+    </div>
+
+    <p class="encourage" id="progress-msg">"Session complete."</p>
+
+    <button class="btn btn-primary chamfer" id="btn-practice-again">Practice Again</button>
+    <button class="btn btn-gold chamfer" id="btn-goto-shop">Visit Terminal</button>
+    <button class="btn btn-ghost" id="btn-back-base">Back to Base</button>
+  </section>
+
+  <!-- ===================== SHOP / TERMINAL ===================== -->
+  <section class="screen" id="screen-shop">
+    <div class="panel chamfer shop-balance">
+      <span class="lbl">Available P</span>
+      <span class="val" id="shop-p-balance">0</span>
+    </div>
+
+    <p class="inline-msg" id="shop-msg"></p>
+
+    <div id="shop-list"></div>
+
+    <button class="btn btn-ghost" id="btn-shop-back">Back to Base</button>
+  </section>
+
+  <footer class="tiny">YISHUN MERIDIAN SEC · MOTIVATION PROTOTYPE · NOT FOR CLINICAL USE</footer>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
