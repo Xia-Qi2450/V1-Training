@@ -88,6 +88,23 @@ body{
   min-height:14px; margin:6px 0;
 }
 
+/* Shared loading indicator — used while fetching questions, on slow connections */
+.loading-block{
+  padding:36px 16px; text-align:center;
+  font-family:var(--font-mono); letter-spacing:2px; color:var(--grey);
+}
+.loading-spinner{
+  width:28px; height:28px; margin:0 auto 14px; background:var(--red);
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+  animation:spin-diamond .9s linear infinite;
+  box-shadow:0 0 14px var(--red-glow);
+}
+@keyframes spin-diamond{ to{ transform:rotate(360deg); } }
+.loading-block .label{ font-size:12px; text-transform:uppercase; }
+.loading-block .label::after{ content:'_'; animation:blink-cursor 1s step-end infinite; }
+@keyframes blink-cursor{ 50%{ opacity:0; } }
+.loading-block .sub{ font-size:10px; color:#55555c; margin-top:6px; letter-spacing:1px; text-transform:none; }
+
 @media (prefers-reduced-motion: reduce){
   *{ animation:none !important; transition:none !important; }
 }

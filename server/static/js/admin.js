@@ -1,4 +1,3 @@
-
 (function(){
   "use strict";
 
@@ -10,9 +9,13 @@
     return res.json();
   }
 
-  async function apiGetQuestions(subject){
-    const qs = subject ? ('?subject=' + encodeURIComponent(subject)) : '';
-    const res = await fetch('/api/questions' + qs);
+  async function apiGetQuestions(params){
+    params = params || {};
+    const qs = Object.keys(params)
+      .filter(function(k){ return params[k] !== undefined && params[k] !== ''; })
+      .map(function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); })
+      .join('&');
+    const res = await fetch('/api/questions' + (qs ? ('?' + qs) : ''));
     if(!res.ok) throw new Error('Could not load questions.');
     return res.json();
   }
@@ -249,6 +252,7 @@
     document.getElementById('ai-json-input').value = '';
     document.getElementById('ai-preview-list').innerHTML = '';
     btn.style.display = 'none';
+    currentPage = 1;
     await refreshSubjectDropdowns();
     await renderQuestionList();
   });
@@ -286,40 +290,62 @@
     document.getElementById('f-subject-new').style.display = e.target.value === NEW_SUBJECT_VALUE ? 'block' : 'none';
   });
 
+  const PAGE_SIZE = 10;
+  let currentPage = 1;
+  let searchDebounce = null;
+
+  function showListLoading(){
+    document.getElementById('question-list').innerHTML =
+      '<div class="loading-block">' +
+        '<div class="loading-spinner"></div>' +
+        '<div class="label">Loading questions</div>' +
+        '<div class="sub">Slow connection? This can take a moment.</div>' +
+      '</div>';
+    document.getElementById('pagination-controls').innerHTML = '';
+  }
+
   async function renderQuestionList(){
     const listMsg = document.getElementById('list-msg');
     const wrap = document.getElementById('question-list');
+    const pager = document.getElementById('pagination-controls');
     const subject = document.getElementById('filter-subject').value;
+    const search = document.getElementById('search-questions').value.trim();
     listMsg.textContent = '';
     listMsg.className = 'inline-msg';
-    let questions = [];
+    showListLoading();
+
+    let data;
     try{
-      questions = await apiGetQuestions(subject || undefined);
+      data = await apiGetQuestions({ subject: subject || undefined, search: search || undefined, page: currentPage, per_page: PAGE_SIZE });
     }catch(err){
       listMsg.textContent = err.message + ' Make sure "python app.py" is running.';
       listMsg.className = 'inline-msg err';
       wrap.innerHTML = '';
+      pager.innerHTML = '';
       document.getElementById('q-count').textContent = '—';
       return;
     }
-    document.getElementById('q-count').textContent = questions.length + ' question' + (questions.length===1?'':'s');
+
+    currentPage = data.page; // server clamps out-of-range pages, stay in sync
+    document.getElementById('q-count').textContent = data.total + ' question' + (data.total===1?'':'s');
     wrap.innerHTML = '';
-    if(questions.length === 0){
-      wrap.innerHTML = '<p class="empty-note">No questions here yet. Add one above.</p>';
+    if(data.items.length === 0){
+      wrap.innerHTML = '<p class="empty-note">' + (search || subject ? 'No questions match this search/filter.' : 'No questions here yet. Add one above.') + '</p>';
+      pager.innerHTML = '';
       return;
     }
     const letters = ['A','B','C','D'];
-    questions.forEach(function(q){
+    data.items.forEach(function(q){
       const card = document.createElement('div');
       card.className = 'panel chamfer-sm qcard';
       const optsHtml = q.options.map(function(opt,i){
-        return '<div class="' + (i===q.answer ? 'correct' : '') + '">' + letters[i] + '. ' + escapeHtml(opt) + (i===q.answer ? ' ✓' : '') + '</div>';
+        return '<div class="' + (i===q.answer ? 'correct' : '') + '">' + letters[i] + '. ' + escapeHtml(opt) + (i===q.answer ? ' \u2713' : '') + '</div>';
       }).join('');
       card.innerHTML =
         '<div class="top">' +
           '<div style="flex:1;">' +
             '<span class="subj">' + escapeHtml(q.subject) + '</span>' +
-            (q.ai_generated ? '<span class="ai-badge">⚠ AI GENERATED</span>' : '') +
+            (q.ai_generated ? '<span class="ai-badge">\u26A0 AI GENERATED</span>' : '') +
             '<div class="qtext">' + escapeHtml(q.question) + '</div>' +
             '<div class="opts">' + optsHtml + '</div>' +
             '<div class="explain">' + escapeHtml(q.explanation) + '</div>' +
@@ -343,9 +369,35 @@
         }
       });
     });
+
+    renderPagination(data);
   }
 
-  document.getElementById('filter-subject').addEventListener('change', renderQuestionList);
+  function renderPagination(data){
+    const pager = document.getElementById('pagination-controls');
+    if(data.total_pages <= 1){ pager.innerHTML = ''; return; }
+    pager.innerHTML =
+      '<button id="page-prev" ' + (data.page<=1 ? 'disabled':'') + '>\u2190 Prev</button>' +
+      '<span class="page-indicator">Page ' + data.page + ' / ' + data.total_pages + '</span>' +
+      '<button id="page-next" ' + (data.page>=data.total_pages ? 'disabled':'') + '>Next \u2192</button>';
+    const prevBtn = document.getElementById('page-prev');
+    const nextBtn = document.getElementById('page-next');
+    if(prevBtn) prevBtn.addEventListener('click', function(){ currentPage = Math.max(1, currentPage-1); renderQuestionList(); });
+    if(nextBtn) nextBtn.addEventListener('click', function(){ currentPage = currentPage+1; renderQuestionList(); });
+  }
+
+  document.getElementById('filter-subject').addEventListener('change', function(){
+    currentPage = 1;
+    renderQuestionList();
+  });
+
+  document.getElementById('search-questions').addEventListener('input', function(){
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(function(){
+      currentPage = 1;
+      renderQuestionList();
+    }, 350);
+  });
 
   document.getElementById('btn-add').addEventListener('click', async function(){
     const msg = document.getElementById('form-msg');
@@ -376,6 +428,7 @@
       document.getElementById('f-explain').value = '';
       document.getElementById('f-subject-new').value = '';
       document.getElementById('f-subject-new').style.display = 'none';
+      currentPage = 1;
       await refreshSubjectDropdowns();
       select.value = subject;
       await renderQuestionList();

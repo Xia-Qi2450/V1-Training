@@ -1,4 +1,3 @@
-
 (function(){
   "use strict";
 
@@ -279,19 +278,15 @@
       document.getElementById('setup-msg').textContent = 'Select at least one subject to deploy.';
       return;
     }
-    const btn = document.getElementById('btn-deploy');
     document.getElementById('setup-msg').textContent = '';
-    btn.disabled = true;
-    btn.textContent = 'Loading mission…';
+    showScreen('loading');
     try{
       await startPractice(setupState);
       player.lastSetup = { difficulty:setupState.difficulty, subjects:setupState.subjects.slice(), count:setupState.count };
       savePlayer();
     }catch(err){
+      showScreen('setup');
       document.getElementById('setup-msg').textContent = err.message || 'Could not start the mission. Is the server running?';
-    }finally{
-      btn.disabled = false;
-      btn.textContent = 'Deploy Mission';
     }
   });
 
@@ -849,7 +844,7 @@
   async function boot(){
     showScreen('dashboard'); // safe default while we connect
     document.getElementById('subject-list').innerHTML =
-      '<p class="inline-msg" style="color:var(--grey);">Connecting to local server…</p>';
+      '<div class="loading-block"><div class="loading-spinner"></div><div class="label">Connecting</div></div>';
     try{
       await fetchSubjects();
     }catch(err){

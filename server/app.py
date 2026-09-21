@@ -131,13 +131,49 @@ def api_subjects():
 def api_questions_list():
     db = get_db()
     subject = request.args.get("subject")
+    search = (request.args.get("search") or "").strip()
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+    except ValueError:
+        page = 1
+    try:
+        per_page = int(request.args.get("per_page", 10))
+    except ValueError:
+        per_page = 10
+    per_page = max(1, min(50, per_page))
+
+    where = []
+    params = []
     if subject:
-        rows = db.execute(
-            "SELECT * FROM questions WHERE subject = ? ORDER BY id DESC", (subject,)
-        ).fetchall()
-    else:
-        rows = db.execute("SELECT * FROM questions ORDER BY id DESC").fetchall()
-    return jsonify([row_to_dict(r) for r in rows])
+        where.append("subject = ?")
+        params.append(subject)
+    if search:
+        like = f"%{search}%"
+        where.append(
+            "(question LIKE ? OR option_a LIKE ? OR option_b LIKE ? OR option_c LIKE ? OR option_d LIKE ? OR explanation LIKE ?)"
+        )
+        params.extend([like] * 6)
+    where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+    total = db.execute(f"SELECT COUNT(*) FROM questions {where_clause}", params).fetchone()[0]
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page = min(page, total_pages)
+    offset = (page - 1) * per_page
+
+    rows = db.execute(
+        f"SELECT * FROM questions {where_clause} ORDER BY id DESC LIMIT ? OFFSET ?",
+        params + [per_page, offset],
+    ).fetchall()
+
+    return jsonify(
+        {
+            "items": [row_to_dict(r) for r in rows],
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": total_pages,
+        }
+    )
 
 
 @app.route("/api/questions", methods=["POST"])

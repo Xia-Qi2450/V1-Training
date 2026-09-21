@@ -66,9 +66,9 @@ body{ overflow-x:hidden; }
 .subject .pct{ font-weight:700; }
 .bar{ margin-top:8px; height:8px; background:var(--bg2); border:1px solid var(--line); position:relative; overflow:hidden; }
 .bar .fill{ height:100%; transition:width .3s ease; }
-.level-low .pct, .level-low .fill{ color:var(--red); background:var(--red); }
-.level-mid .pct, .level-mid .fill{ color:var(--amber); background:var(--amber); }
-.level-high .pct, .level-high .fill{ color:var(--green); background:var(--green); }
+.level-low .pct, .level-low .fill{ color:var(--white); background:var(--red); }
+.level-mid .pct, .level-mid .fill{ color:#000000; background:var(--amber); }
+.level-high .pct, .level-high .fill{ color:var(--white); background:var(--green); }
 
 .btn{
   display:block; width:100%; border:none; cursor:pointer;
